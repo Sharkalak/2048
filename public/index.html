@@ -1,8 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2048 Game</title>
     <style>
+          /* 新增重新开始按钮样式 */
+          #restart-btn {
+            padding: 10px 20px;
+            background-color: #8f7a66;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 18px;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #restart-btn:hover {
+            background-color: #9d8b7a;
+        }
+
+        /* 调整原有样式适配移动端 */
+        .cell {
+            width: 15vw;
+            height: 15vw;
+            max-width: 80px;
+            max-height: 80px;
+        }
+
+        h1 {
+            font-size: 5vw;
+            margin: 10px 0;
+        }
+
+        #score {
+            font-size: 4vw;
+            margin: 10px 0;
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -58,12 +94,55 @@
 <body>
     <h1>2048</h1>
     <div id="score">得分：0</div>
+    <button id="restart-btn">重新开始</button>
     <div id="game-board"></div>
 
     <script>
         let board = [];
         let score = 0;
         const boardSize = 4;
+        // 新增触摸事件处理
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const minSwipeDistance = 30;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        document.addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (Math.abs(deltaX) > minSwipeDistance) {
+                    move(deltaX > 0 ? 'right' : 'left');
+                }
+            } else {
+                if (Math.abs(deltaY) > minSwipeDistance) {
+                    move(deltaY > 0 ? 'down' : 'up');
+                }
+            }
+        });
+        // 新增重新开始功能
+        document.getElementById('restart-btn').addEventListener('click', initGame);
+
+        // 修改初始化函数
+        function initGame() {
+            board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
+            score = 0;
+            updateScore();
+            addNewNumber();
+            addNewNumber();
+            updateBoard();
+            
+            // 防止移动端触摸时页面滚动
+            document.body.style.overflow = 'hidden';
+            document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+        }
 
         function initGame() {
             board = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
