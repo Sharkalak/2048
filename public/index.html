@@ -89,6 +89,24 @@
             font-size: 24px;
             margin: 20px 0;
         }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            position: fixed;
+            width: 100%;
+        }
+
+        #game-board {
+            touch-action: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 新增防止点击高亮 */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
     </style>
 </head>
 <body>
@@ -105,6 +123,24 @@
         let touchStartX = 0;
         let touchStartY = 0;
         const minSwipeDistance = 30;
+        // 增强版触摸处理
+        let isGameBoardTouched = false;
+        const gameBoard = document.getElementById('game-board');
+        
+        gameBoard.addEventListener('touchstart', e => {
+            isGameBoardTouched = true;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        gameBoard.addEventListener('touchmove', e => {
+            if (isGameBoardTouched) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        gameBoard.addEventListener('touchend', e => {
+            isGameBoardTouched = false;
+            // 原有滑动处理逻辑...
+        });
 
         document.addEventListener('touchstart', e => {
             touchStartX = e.touches[0].clientX;
@@ -142,6 +178,11 @@
             // 防止移动端触摸时页面滚动
             document.body.style.overflow = 'hidden';
             document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+            // 强制锁定视窗尺寸
+            document.documentElement.style.height = window.innerHeight + 'px';
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
         }
 
         function initGame() {
@@ -270,6 +311,14 @@
                 case 'ArrowDown': move('down'); break;
             }
         });
+         // 添加窗口变化监听
+         window.addEventListener('resize', () => {
+            document.documentElement.style.height = window.innerHeight + 'px';
+            window.scrollTo(0, 0);
+        });
+        // 禁用浏览器默认行为
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
 
         initGame();
     </script>
